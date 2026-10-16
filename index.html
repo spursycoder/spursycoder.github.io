@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spursycoder — Apps</title>
+  <meta name="description" content="A hub of all web apps built and deployed by spursycoder on GitHub Pages." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b14;
+      --surface: #0f1628;
+      --surface-2: #161d35;
+      --border: #1e2a45;
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.15);
+      --accent: #a78bfa;
+      --text: #f0f4ff;
+      --text-muted: #7381a0;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Background mesh ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(99,102,241,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(167,139,250,0.12) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 5rem 0 3.5rem;
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      margin: 0 auto 1.25rem;
+      display: block;
+      background: var(--surface-2);
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #818cf8 0%, #c084fc 60%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    header p {
+      margin-top: 0.75rem;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      font-weight: 400;
+    }
+
+    /* ── Status bar ── */
+    #status {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      min-height: 1.5rem;
+    }
+
+    #status .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-right: 6px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    /* ── Grid ── */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top left, var(--primary-glow), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(99,102,241,0.3), 0 20px 40px rgba(0,0,0,0.4);
+      background: var(--surface-2);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-name .arrow {
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity 0.2s, transform 0.2s;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .card:hover .arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .card-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .card-url {
+      font-size: 0.775rem;
+      color: var(--primary);
+      margin-top: 0.5rem;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(99,102,241,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.25);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge.lang {
+      background: rgba(167,139,250,0.1);
+      color: #c4b5fd;
+      border-color: rgba(167,139,250,0.2);
+    }
+
+    /* ── Skeleton loader ── */
+    .skeleton {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .skel-line {
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--surface-2) 25%, #1e2945 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Error / Empty ── */
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .empty h2 { color: var(--text); margin-bottom: 0.5rem; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <img id="avatar" class="avatar" src="" alt="spursycoder avatar" />
+      <h1>spursycoder</h1>
+      <p>All deployed apps, automatically updated</p>
+    </header>
+
+    <div id="status"><span class="dot"></span>Loading deployed apps…</div>
+    <div id="grid"></div>
+
+    <footer>
+      Automatically fetched from <a href="https://github.com/spursycoder" target="_blank">GitHub</a>.
+      Updates instantly when a new app is deployed. &middot; Built with the GitHub API.
+    </footer>
+  </div>
+
+  <script>
+    const USERNAME = 'spursycoder';
+    const HUB_REPO = `${USERNAME}.github.io`;
+
+    const ICONS = {
+      JavaScript: '⚡', TypeScript: '🔷', HTML: '🌐', CSS: '🎨',
+      Python: '🐍', Vue: '💚', React: '⚛️', Svelte: '🔥',
+      default: '🚀'
+    };
+
+    const APP_DESCRIPTIONS = {
+      // Override descriptions here if desired
+    };
+
+    async function fetchAllRepos() {
+      let repos = [];
+      let page = 1;
+      while (true) {
+        const res = await fetch(
+          `https://api.github.com/users/${USERNAME}/repos?per_page=100&page=${page}&sort=updated`,
+          { headers: { Accept: 'application/vnd.github+json' } }
+        );
+        if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+        const batch = await res.json();
+        repos = repos.concat(batch);
+        if (batch.length < 100) break;
+        page++;
+      }
+      return repos;
+    }
+
+    async function fetchUserAvatar() {
+      const res = await fetch(`https://api.github.com/users/${USERNAME}`);
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('avatar').src = data.avatar_url;
+      }
+    }
+
+    function pageUrl(repo) {
+      // For username.github.io the url is just the root
+      if (repo.name.toLowerCase() === HUB_REPO.toLowerCase()) {
+        return `https://${USERNAME}.github.io/`;
+      }
+      return `https://${USERNAME}.github.io/${repo.name}/`;
+    }
+
+    function renderSkeletons(n) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = Array.from({ length: n }, () => `
+        <div class="skeleton">
+          <div class="skel-line" style="height:20px;width:40%"></div>
+          <div class="skel-line" style="height:14px;width:85%"></div>
+          <div class="skel-line" style="height:14px;width:65%"></div>
+          <div class="skel-line" style="height:12px;width:50%;margin-top:8px"></div>
+        </div>
+      `).join('');
+    }
+
+    function renderCards(repos) {
+      const grid = document.getElementById('grid');
+
+      if (repos.length === 0) {
+        grid.innerHTML = `<div class="empty"><h2>No deployed apps yet</h2><p>Push a repo with GitHub Pages enabled and it will appear here automatically.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = repos.map(repo => {
+        const url = pageUrl(repo);
+        const icon = ICONS[repo.language] || ICONS.default;
+        const desc = APP_DESCRIPTIONS[repo.name] || repo.description || 'No description provided.';
+        const lang = repo.language || 'HTML';
+        const updatedAt = new Date(repo.pushed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a class="card" href="${url}" target="_blank" rel="noopener" aria-label="Open ${repo.name}">
+            <div class="card-icon">${icon}</div>
+            <div class="card-name">
+              ${repo.name}
+              <span class="arrow">→</span>
+            </div>
+            <div class="card-desc">${desc}</div>
+            <div class="card-url">${url}</div>
+            <div class="card-meta">
+              <span class="badge">Pages</span>
+              ${lang ? `<span class="badge lang">${lang}</span>` : ''}
+              <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto">Updated ${updatedAt}</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    async function init() {
+      const status = document.getElementById('status');
+
+      renderSkeletons(6);
+      fetchUserAvatar();
+
+      try {
+        const repos = await fetchAllRepos();
+
+        // Filter to only repos that have Pages enabled
+        const pagesRepos = repos.filter(r => r.has_pages);
+
+        // Sort: put hub repo first, then by most recently pushed
+        pagesRepos.sort((a, b) => {
+          if (a.name.toLowerCase() === HUB_REPO.toLowerCase()) return -1;
+          if (b.name.toLowerCase() === HUB_REPO.toLowerCase()) return 1;
+          return new Date(b.pushed_at) - new Date(a.pushed_at);
+        });
+
+        // Exclude the hub repo itself from the cards
+        const apps = pagesRepos.filter(r => r.name.toLowerCase() !== HUB_REPO.toLowerCase());
+
+        status.innerHTML = `<span style="color:var(--accent)">✦</span>&ensp;${apps.length} app${apps.length !== 1 ? 's' : ''} deployed`;
+        renderCards(apps);
+      } catch (err) {
+        status.innerHTML = `⚠️ Failed to load: ${err.message}`;
+        document.getElementById('grid').innerHTML = `
+          <div class="empty">
+            <h2>Could not reach GitHub API</h2>
+            <p>You may have been rate-limited. Try again in a minute.</p>
+          </div>`;
+        console.error(err);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
