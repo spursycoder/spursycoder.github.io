@@ -3,751 +3,898 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>spursycoder</title>
-  <meta name="description" content="Engineer. Builder. Deployer. All deployed apps by spursycoder." />
+  <title>stephno</title>
+  <meta name="description" content="Engineer. Builder. Deployer. Apps by stephno." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
     /* ── TOKENS ── */
     :root {
-      --ground: #050505;
-      --surface: #0d0d0d;
-      --surface-2: #111111;
-      --ink: #ffffff;
-      --muted: #6b7280;
-      --muted-2: #374151;
+      --ground:   #050505;
+      --ink:      #ffffff;
+      --muted:    #6b7280;
+      --muted-dim:#2d3748;
       --accent-e: #10b981;
       --accent-v: #8b5cf6;
-      --font: 'Space Grotesk', system-ui, sans-serif;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --font:     'Space Grotesk', system-ui, sans-serif;
+      --ease:     cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* ── RESET ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
 
-    body {
-      font-family: var(--font);
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
       background: var(--ground);
       color: var(--ink);
+      font-family: var(--font);
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
 
-    /* ── NOISE OVERLAY (fixed, pointer-events-none) ── */
+    /* ── NOISE (fixed, pointer-events-none) ── */
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      pointer-events: none;
-      opacity: 0.025;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      position: fixed; inset: 0;
+      z-index: 99; pointer-events: none;
+      opacity: 0.022;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size: 200px;
     }
 
-    /* ── CONSTELLATION CANVAS ── */
-    #constellation {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
+    /* ── CANVAS ── */
+    #cosmos-canvas {
+      position: fixed; inset: 0;
+      z-index: 1;
+      cursor: default;
     }
 
-    /* ── NAV ── */
+    /* ── HERO UI ── */
+    #hero-ui {
+      position: fixed; inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+      transition: opacity 0.75s var(--ease), transform 0.75s var(--ease);
+    }
+
+    #hero-ui > * { pointer-events: auto; }
+
+    #hero-ui.cosmos-mode {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+    }
+
     nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 90;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 2rem 4rem;
-      transition: background 0.4s var(--ease-out);
-    }
-
-    nav.scrolled {
-      background: rgba(5, 5, 5, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
     }
 
     .nav-wordmark {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       color: var(--ink);
       text-decoration: none;
     }
 
-    .nav-links {
-      display: flex;
-      gap: 2.5rem;
-      list-style: none;
-    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
 
     .nav-links a {
       color: var(--muted);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       font-weight: 400;
-      transition: color 0.25s var(--ease-out);
+      cursor: pointer;
+      transition: color 0.2s var(--ease);
     }
 
     .nav-links a:hover { color: var(--ink); }
 
-    /* ── HERO ── */
-    #hero {
-      position: relative;
-      min-height: 100dvh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-      padding: 0 4rem;
-      overflow: hidden;
-    }
-
-    .hero-left {
-      position: relative;
-      z-index: 1;
-      padding-top: 6rem;
+    .hero-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 4rem 6rem;
     }
 
     .hero-name {
       font-size: clamp(3.5rem, 8.5vw, 9rem);
       font-weight: 700;
       letter-spacing: -0.04em;
-      line-height: 0.92;
+      line-height: 0.9;
       color: var(--ink);
-      opacity: 0;
-      transform: translateY(40px);
-      animation: fadeUp 1s var(--ease-out) 0.1s forwards;
     }
 
     .hero-sub {
-      margin-top: 2rem;
-      font-size: clamp(1rem, 1.5vw, 1.25rem);
+      margin-top: 1.75rem;
+      font-size: clamp(0.95rem, 1.4vw, 1.2rem);
       font-weight: 300;
       color: var(--muted);
       letter-spacing: 0.01em;
-      opacity: 0;
-      transform: translateY(30px);
-      animation: fadeUp 1s var(--ease-out) 0.3s forwards;
     }
 
-    .hero-cta-row {
-      margin-top: 3rem;
+    .hero-cta {
+      margin-top: 2.75rem;
       display: flex;
       align-items: center;
       gap: 2rem;
-      opacity: 0;
-      transform: translateY(30px);
-      animation: fadeUp 1s var(--ease-out) 0.5s forwards;
+      flex-wrap: wrap;
     }
 
-    .btn-primary {
+    .btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.75rem;
-      background: var(--ink);
-      color: var(--ground);
-      text-decoration: none;
-      font-size: 0.9rem;
+      gap: 0.5rem;
+      font-family: var(--font);
+      font-size: 0.875rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      padding: 0.85rem 1.75rem;
+      padding: 0.875rem 1.75rem;
       border-radius: 4px;
-      transition: transform 0.3s var(--ease-out), background 0.3s;
-    }
-
-    .btn-primary:hover { transform: translateY(-2px); background: #e5e7eb; }
-    .btn-primary:active { transform: translateY(0) scale(0.98); }
-
-    .hero-stat {
-      font-size: 0.8rem;
-      color: var(--muted);
-      letter-spacing: 0.02em;
-    }
-
-    .hero-stat strong {
-      color: var(--accent-e);
-      font-weight: 700;
-    }
-
-    .hero-right {
-      position: relative;
-      z-index: 1;
-      height: 100dvh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* ── SECTION GENERIC ── */
-    section {
-      padding: 10rem 4rem;
-    }
-
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--accent-e);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-    }
-
-    .section-heading {
-      font-size: clamp(2.5rem, 5vw, 5rem);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1;
-      color: var(--ink);
-      margin-bottom: 4rem;
-    }
-
-    /* ── APPS BENTO GRID ── */
-    #apps { padding-bottom: 4rem; }
-
-    #grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 1rem;
-    }
-
-    /* Card base */
-    .app-card {
-      background: var(--surface);
-      border-radius: 16px;
-      padding: 2rem;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.3s var(--ease), background 0.25s;
       text-decoration: none;
-      color: inherit;
+    }
+
+    .btn-primary { background: var(--ink); color: var(--ground); }
+    .btn-primary:hover { transform: translateY(-2px); background: #e5e7eb; }
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .btn-outline:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.5); }
+
+    .hero-stat { font-size: 0.775rem; color: var(--muted); }
+    .hero-stat strong { color: var(--accent-e); font-weight: 700; }
+
+    /* ── COSMOS UI ── */
+    #cosmos-ui {
+      position: fixed; inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.75s var(--ease);
+    }
+
+    #cosmos-ui.visible { opacity: 1; }
+
+    .cosmos-back {
+      position: absolute;
+      top: 2.25rem; left: 4rem;
+      background: none; border: none;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: color 0.2s var(--ease);
+      padding: 0.25rem 0;
+    }
+
+    .cosmos-back:hover { color: var(--ink); }
+
+    .cosmos-hint {
+      position: absolute;
+      bottom: 2.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: var(--muted-dim);
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+
+    .cosmos-connect {
+      position: absolute;
+      bottom: 2.25rem; right: 4rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-decoration: none;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: color 0.2s var(--ease);
+    }
+
+    .cosmos-connect:hover { color: var(--ink); }
+
+    /* ── TOOLTIP ── */
+    #tooltip {
+      position: fixed;
+      z-index: 20;
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0.55rem 0.9rem;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px) scale(0.97);
+      transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
+    }
+
+    #tooltip.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .tooltip-name {
+      display: block;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .tooltip-action {
+      display: block;
+      font-size: 0.68rem;
+      color: var(--accent-e);
+      margin-top: 0.15rem;
+    }
+
+    /* ── CONNECT PANEL ── */
+    #connect-panel {
+      position: fixed; inset: 0;
+      z-index: 40;
+      background: var(--ground);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      min-height: 200px;
-      position: relative;
-      overflow: hidden;
+      justify-content: center;
+      padding: 5rem 5rem 0;
       opacity: 0;
-      transform: translateY(24px);
-      transition:
-        transform 0.6s var(--ease-out),
-        background 0.3s var(--ease-out),
-        opacity 0.6s var(--ease-out);
+      transform: translateY(100%);
+      transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+      pointer-events: none;
     }
 
-    .app-card.visible { opacity: 1; transform: translateY(0); }
-    .app-card:hover { background: var(--surface-2); transform: translateY(-4px); }
-    .app-card:active { transform: translateY(-2px) scale(0.99); }
+    #connect-panel.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
 
-    /* Accent line on top for featured cards */
-    .app-card.featured::before {
-      content: '';
+    .panel-close {
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--accent-v);
-    }
-
-    .app-card.span-8  { grid-column: span 8; min-height: 280px; }
-    .app-card.span-4  { grid-column: span 4; }
-    .app-card.span-6  { grid-column: span 6; }
-    .app-card.span-5  { grid-column: span 5; }
-    .app-card.span-7  { grid-column: span 7; }
-
-    .card-top { display: flex; align-items: flex-start; justify-content: space-between; }
-
-    .live-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent-e);
-      flex-shrink: 0;
-      margin-top: 0.35rem;
-      position: relative;
-    }
-
-    .live-dot::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 50%;
-      background: var(--accent-e);
-      opacity: 0.2;
-      animation: dotPulse 2.5s ease-in-out infinite;
-    }
-
-    @keyframes dotPulse {
-      0%, 100% { transform: scale(1); opacity: 0.2; }
-      50% { transform: scale(1.8); opacity: 0; }
-    }
-
-    .card-name {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      line-height: 1.2;
-      max-width: 85%;
-    }
-
-    .card-desc {
-      font-size: 0.875rem;
+      top: 2.25rem; right: 4rem;
+      background: none; border: none;
       color: var(--muted);
-      line-height: 1.55;
-      margin-top: 0.75rem;
-      flex: 1;
+      font-family: var(--font);
+      font-size: 1.5rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: color 0.2s var(--ease);
+      line-height: 1;
     }
 
-    .card-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 1.5rem;
-    }
-
-    .card-meta {
-      font-size: 0.725rem;
-      color: var(--muted-2);
-      letter-spacing: 0.03em;
-    }
-
-    .card-arrow {
-      font-size: 1rem;
-      color: var(--muted);
-      transition: transform 0.3s var(--ease-out), color 0.3s;
-    }
-
-    .app-card:hover .card-arrow {
-      transform: translate(3px, -3px);
-      color: var(--ink);
-    }
-
-    /* ── SKELETON ── */
-    .skeleton {
-      background: var(--surface);
-      border-radius: 16px;
-      min-height: 200px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .skeleton::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255,255,255,0.04) 50%,
-        transparent 100%);
-      background-size: 200% 100%;
-      animation: shimmer 1.6s infinite;
-    }
-
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* ── CONNECT SECTION ── */
-    #connect {
-      padding: 8rem 4rem 6rem;
-      border-top: 2px solid var(--accent-e);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 4rem;
-    }
+    .panel-close:hover { color: var(--ink); }
 
     .connect-heading {
-      font-size: clamp(2.5rem, 5vw, 5.5rem);
+      font-size: clamp(2.5rem, 6.5vw, 7rem);
       font-weight: 700;
       letter-spacing: -0.04em;
-      line-height: 1;
+      line-height: 0.9;
     }
 
     .btn-linkedin {
-      flex-shrink: 0;
       display: inline-flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
       background: var(--ink);
       color: var(--ground);
       text-decoration: none;
-      font-size: 0.95rem;
+      font-family: var(--font);
+      font-size: 0.925rem;
       font-weight: 700;
-      padding: 1rem 2rem;
+      padding: 1rem 2.25rem;
       border-radius: 4px;
-      transition: transform 0.3s var(--ease-out), background 0.3s;
-      white-space: nowrap;
+      margin-top: 3rem;
+      width: fit-content;
+      transition: transform 0.3s var(--ease), background 0.25s;
     }
 
     .btn-linkedin:hover { transform: translateY(-2px); background: #e5e7eb; }
     .btn-linkedin:active { transform: scale(0.97); }
 
-    /* ── FOOTER ── */
-    footer {
-      padding: 3rem 4rem 4rem;
+    .panel-footer {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      border-top: 2px solid var(--accent-e);
+      padding: 2rem 5rem;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
     }
 
-    .footer-name {
-      font-size: clamp(2rem, 6vw, 7rem);
+    .panel-footer-ghost {
+      font-size: clamp(2.5rem, 6vw, 7rem);
       font-weight: 700;
       letter-spacing: -0.05em;
-      line-height: 1;
       color: var(--ink);
-      opacity: 0.08;
+      opacity: 0.06;
+      line-height: 1;
       user-select: none;
     }
 
-    .footer-copy {
-      font-size: 0.75rem;
+    .panel-footer-copy {
+      font-size: 0.72rem;
       color: var(--muted);
       text-align: right;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp {
-      to { opacity: 1; transform: translateY(0); }
+    /* ── LOADING ── */
+    #load-hint {
+      position: fixed;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: var(--muted-dim);
+      z-index: 15;
+      transition: opacity 0.5s;
+      pointer-events: none;
     }
 
-    .reveal {
-      opacity: 0;
-      transform: translateY(32px);
-      transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── RESPONSIVE ── */
+    /* ── MOBILE ── */
     @media (max-width: 768px) {
-      nav { padding: 1.5rem 1.5rem; }
+      nav { padding: 1.25rem 1.5rem; }
       .nav-links { gap: 1.5rem; }
 
-      #hero {
-        grid-template-columns: 1fr;
-        padding: 0 1.5rem;
-        min-height: 100dvh;
-        align-content: center;
+      .hero-content {
+        padding: 0 1.5rem 5rem;
+        justify-content: flex-end;
       }
 
-      .hero-right { display: none; }
-      .hero-left { padding-top: 8rem; }
+      .hero-cta { gap: 1rem; }
 
-      section { padding: 6rem 1.5rem; }
+      .cosmos-back { left: 1.5rem; top: 1.5rem; }
+      .cosmos-connect { right: 1.5rem; bottom: 1.5rem; }
+      .cosmos-hint { bottom: 1.5rem; }
 
-      #grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-      }
-
-      .app-card.span-8,
-      .app-card.span-4,
-      .app-card.span-6,
-      .app-card.span-5,
-      .app-card.span-7 {
-        grid-column: span 1;
-      }
-
-      #connect {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 6rem 1.5rem 4rem;
-        gap: 2.5rem;
-      }
-
-      footer {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1.5rem;
-        padding: 2rem 1.5rem 3rem;
-      }
-
-      .footer-copy { text-align: left; }
+      #connect-panel { padding: 4rem 1.5rem 0; }
+      .panel-close { right: 1.5rem; top: 1.5rem; }
+      .panel-footer { padding: 1.5rem 1.5rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav id="nav">
-    <a class="nav-wordmark" href="/">spursycoder</a>
+<canvas id="cosmos-canvas"></canvas>
+
+<!-- HERO UI -->
+<div id="hero-ui">
+  <nav>
+    <a class="nav-wordmark" href="/">stephno</a>
     <ul class="nav-links">
-      <li><a href="#apps">Apps</a></li>
-      <li><a href="#connect">LinkedIn</a></li>
+      <li><a id="nav-explore" role="button" tabindex="0">Apps</a></li>
+      <li><a id="nav-connect" role="button" tabindex="0">Connect</a></li>
     </ul>
   </nav>
-
-  <!-- HERO -->
-  <section id="hero">
-    <canvas id="constellation"></canvas>
-    <div class="hero-left">
-      <h1 class="hero-name">spursycoder</h1>
-      <p class="hero-sub">Engineer. Builder. Deployer.</p>
-      <div class="hero-cta-row">
-        <a href="#apps" class="btn-primary">View Apps &darr;</a>
-        <p class="hero-stat"><strong id="app-count">—</strong> apps deployed to the web</p>
-      </div>
+  <div class="hero-content">
+    <h1 class="hero-name">stephno</h1>
+    <p class="hero-sub">Engineer. Builder. Deployer.</p>
+    <div class="hero-cta">
+      <button class="btn btn-primary" id="explore-btn">Explore the Universe</button>
+      <span class="hero-stat">
+        <strong id="app-count">—</strong> apps in the cosmos
+      </span>
     </div>
-    <div class="hero-right" aria-hidden="true">
-      <!-- constellation canvas fills here -->
-    </div>
-  </section>
-
-  <!-- APPS -->
-  <section id="apps">
-    <p class="section-label reveal">Deployed Work</p>
-    <h2 class="section-heading reveal">Apps</h2>
-    <div id="grid"></div>
-  </section>
-
-  <!-- CONNECT -->
-  <div id="connect">
-    <h2 class="connect-heading reveal">Let's connect.</h2>
-    <a
-      class="btn-linkedin"
-      href="https://www.linkedin.com/in/aastlestephno/"
-      target="_blank"
-      rel="noopener noreferrer"
-    >LinkedIn &nearr;</a>
   </div>
+</div>
 
-  <!-- FOOTER -->
-  <footer>
-    <p class="footer-name" aria-hidden="true">spursycoder</p>
-    <p class="footer-copy">
-      &copy; 2026 spursycoder<br>
-      Auto-synced via GitHub API
-    </p>
-  </footer>
+<!-- COSMOS UI -->
+<div id="cosmos-ui" aria-hidden="true">
+  <button class="cosmos-back" id="back-btn">← Back</button>
+  <span class="cosmos-hint">tap a node to open</span>
+  <a class="cosmos-connect" id="cosmos-connect-btn" role="button" tabindex="0">Connect ↓</a>
+</div>
 
-  <script>
-    /* ── CONSTANTS ── */
-    const USERNAME = 'spursycoder';
-    const HUB_REPO = `${USERNAME}.github.io`;
-    const LINKEDIN  = 'https://www.linkedin.com/in/aastlestephno/';
+<!-- TOOLTIP -->
+<div id="tooltip" role="tooltip">
+  <span class="tooltip-name" id="tooltip-name"></span>
+  <span class="tooltip-action">click to open ↗</span>
+</div>
 
-    /* ── NAV SCROLL ── */
-    const nav = document.getElementById('nav');
-    window.addEventListener('scroll', () => {
-      nav.classList.toggle('scrolled', window.scrollY > 40);
-    }, { passive: true });
+<!-- CONNECT PANEL -->
+<div id="connect-panel" aria-modal="true" role="dialog">
+  <button class="panel-close" id="panel-close" aria-label="Close">×</button>
+  <h2 class="connect-heading">Let's connect.</h2>
+  <a
+    class="btn-linkedin"
+    href="https://www.linkedin.com/in/aastlestephno/"
+    target="_blank"
+    rel="noopener noreferrer"
+  >LinkedIn ↗</a>
+  <div class="panel-footer">
+    <p class="panel-footer-ghost" aria-hidden="true">stephno</p>
+    <p class="panel-footer-copy">© 2026 stephno<br>Auto-synced via GitHub</p>
+  </div>
+</div>
 
-    /* ── CONSTELLATION CANVAS ── */
-    const canvas = document.getElementById('constellation');
-    const ctx = canvas.getContext('2d');
+<!-- LOADING -->
+<div id="load-hint">loading cosmos…</div>
 
-    let nodes = [];
-    const NODE_COUNT = 60;
-    const MAX_DIST   = 160;
-    const COLORS     = ['#10b981', '#8b5cf6', '#ffffff'];
+<script>
+/* ───────────────────────────────────────────────
+   CONFIG
+─────────────────────────────────────────────── */
+const GH_USER  = 'spursycoder';
+const HUB_REPO = `${GH_USER}.github.io`;
+let   isMobile = window.innerWidth <= 768;
 
-    function resizeCanvas() {
-      canvas.width  = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+/* ───────────────────────────────────────────────
+   CANVAS
+─────────────────────────────────────────────── */
+const canvas = document.getElementById('cosmos-canvas');
+const ctx    = canvas.getContext('2d');
+let W = 0, H = 0;
+
+function resize() {
+  isMobile = window.innerWidth <= 768;
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  if (appNodes.length) recomputeCosmosPositions();
+}
+window.addEventListener('resize', resize, { passive: true });
+
+/* ───────────────────────────────────────────────
+   STATE MACHINE  (0 = HERO, 1 = COSMOS)
+─────────────────────────────────────────────── */
+let mode    = 'HERO';  // 'HERO' | 'COSMOS'
+let transT  = 0;       // raw [0,1], animated
+let targetT = 0;
+const EASE  = t => 1 - Math.pow(1 - t, 3); // ease-out cubic
+
+function enterCosmos() {
+  mode    = 'COSMOS';
+  targetT = 1;
+  document.getElementById('hero-ui').classList.add('cosmos-mode');
+  document.getElementById('hero-ui').setAttribute('aria-hidden', 'true');
+  const cu = document.getElementById('cosmos-ui');
+  cu.classList.add('visible');
+  cu.removeAttribute('aria-hidden');
+  canvas.style.cursor = 'crosshair';
+}
+
+function enterHero() {
+  mode    = 'HERO';
+  targetT = 0;
+  document.getElementById('hero-ui').classList.remove('cosmos-mode');
+  document.getElementById('hero-ui').removeAttribute('aria-hidden');
+  const cu = document.getElementById('cosmos-ui');
+  cu.classList.remove('visible');
+  cu.setAttribute('aria-hidden', 'true');
+  canvas.style.cursor = 'default';
+  hideTooltip();
+  appNodes.forEach(n => { n.hovered = false; });
+}
+
+/* ───────────────────────────────────────────────
+   NODES
+─────────────────────────────────────────────── */
+let decoNodes = [];
+let appNodes  = [];
+
+const DECO_COLORS = [
+  'rgba(255,255,255,0.65)',
+  'rgba(139,92,246,0.55)',
+  'rgba(255,255,255,0.35)',
+  'rgba(16,185,129,0.4)',
+];
+
+function randBetween(a, b) { return a + Math.random() * (b - a); }
+
+function createDecoNode() {
+  return {
+    x:  randBetween(0, W),
+    y:  randBetween(0, H),
+    vx: randBetween(-0.45, 0.45),
+    vy: randBetween(-0.45, 0.45),
+    r:  randBetween(0.5, 1.8),
+    baseAlpha: randBetween(0.08, 0.55),
+    color: DECO_COLORS[Math.floor(Math.random() * DECO_COLORS.length)],
+    pulse: Math.random() * Math.PI * 2,
+  };
+}
+
+function initDecoNodes() {
+  const count = isMobile ? 30 : 55;
+  decoNodes = Array.from({ length: count }, createDecoNode);
+}
+
+function initAppNodes(apps) {
+  appNodes = apps.map((app) => ({
+    x:  randBetween(W * 0.45, W * 0.95),
+    y:  randBetween(H * 0.1, H * 0.9),
+    vx: randBetween(-0.5, 0.5),
+    vy: randBetween(-0.5, 0.5),
+    r:  isMobile ? 9 : 7,
+    pulse: Math.random() * Math.PI * 2,
+    app,
+    cosmosX: 0,
+    cosmosY: 0,
+    hovered: false,
+    clickAnim: 0, // 1→0
+  }));
+  recomputeCosmosPositions();
+  document.getElementById('app-count').textContent = apps.length;
+  const hint = document.getElementById('load-hint');
+  hint.style.opacity = '0';
+  setTimeout(() => hint.remove(), 600);
+}
+
+/* ───────────────────────────────────────────────
+   COSMOS POSITIONS — golden-ratio spiral
+─────────────────────────────────────────────── */
+function recomputeCosmosPositions() {
+  const n = appNodes.length;
+  if (!n) return;
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+  const margin = isMobile ? 70 : 110;
+  const maxR   = Math.min(W, H) * (isMobile ? 0.38 : 0.41);
+  const cx = W / 2, cy = H / 2;
+
+  appNodes.forEach((node, i) => {
+    const r     = Math.sqrt((i + 0.5) / n) * maxR;
+    const theta = i * GOLDEN;
+    node.cosmosX = clamp(cx + r * Math.cos(theta), margin, W - margin);
+    node.cosmosY = clamp(cy + r * Math.sin(theta), margin + 36, H - margin);
+  });
+}
+
+/* ───────────────────────────────────────────────
+   TOOLTIP
+─────────────────────────────────────────────── */
+const tooltipEl   = document.getElementById('tooltip');
+const tooltipName = document.getElementById('tooltip-name');
+
+function showTooltip(node, px, py) {
+  tooltipName.textContent = node.app.name;
+  const tw = 190, th = 52;
+  const off = 14;
+  let tx = px + off, ty = py - th / 2;
+  if (tx + tw > W - 8) tx = px - tw - off;
+  if (ty < 8) ty = 8;
+  if (ty + th > H - 8) ty = H - th - 8;
+  tooltipEl.style.left = tx + 'px';
+  tooltipEl.style.top  = ty + 'px';
+  tooltipEl.classList.add('visible');
+}
+
+function hideTooltip() {
+  tooltipEl.classList.remove('visible');
+}
+
+/* ───────────────────────────────────────────────
+   HIT TEST
+─────────────────────────────────────────────── */
+function hitNode(px, py) {
+  const hitR = isMobile ? 32 : 22;
+  for (const n of appNodes) {
+    const dx = n.x - px, dy = n.y - py;
+    if (Math.sqrt(dx * dx + dy * dy) < Math.max(hitR, n.r + 8)) return n;
+  }
+  return null;
+}
+
+/* ───────────────────────────────────────────────
+   POINTER  (mouse)
+─────────────────────────────────────────────── */
+let mouseX = -9999, mouseY = -9999;
+
+canvas.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  if (mode !== 'COSMOS') return;
+  const hit = hitNode(mouseX, mouseY);
+  appNodes.forEach(n => { n.hovered = n === hit; });
+  if (hit) { showTooltip(hit, mouseX, mouseY); canvas.style.cursor = 'pointer'; }
+  else     { hideTooltip(); canvas.style.cursor = 'crosshair'; }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  mouseX = -9999; mouseY = -9999;
+  hideTooltip();
+  appNodes.forEach(n => { n.hovered = false; });
+});
+
+canvas.addEventListener('click', e => {
+  if (mode !== 'COSMOS') return;
+  const hit = hitNode(e.clientX, e.clientY);
+  if (hit) {
+    hit.clickAnim = 1;
+    setTimeout(() => window.open(hit.app.url, '_blank', 'noopener,noreferrer'), 220);
+  }
+});
+
+/* ───────────────────────────────────────────────
+   TOUCH
+─────────────────────────────────────────────── */
+let lastTappedNode = null;
+
+canvas.addEventListener('touchstart', e => {
+  if (mode !== 'COSMOS') return;
+  const t0 = e.changedTouches[0];
+  const hit = hitNode(t0.clientX, t0.clientY);
+  if (!hit) {
+    hideTooltip();
+    lastTappedNode = null;
+    appNodes.forEach(n => { n.hovered = false; });
+    return;
+  }
+  hit.clickAnim = 1;
+  if (hit === lastTappedNode) {
+    // Second tap: open
+    setTimeout(() => window.open(hit.app.url, '_blank', 'noopener,noreferrer'), 180);
+    lastTappedNode = null;
+    hideTooltip();
+    appNodes.forEach(n => { n.hovered = false; });
+  } else {
+    // First tap: preview
+    appNodes.forEach(n => { n.hovered = n === hit; });
+    showTooltip(hit, t0.clientX, t0.clientY);
+    lastTappedNode = hit;
+  }
+  e.preventDefault();
+}, { passive: false });
+
+/* ───────────────────────────────────────────────
+   CONNECT PANEL
+─────────────────────────────────────────────── */
+const connectPanel = document.getElementById('connect-panel');
+
+function openConnect() {
+  connectPanel.classList.add('visible');
+  document.getElementById('panel-close').focus();
+}
+
+function closeConnect() {
+  connectPanel.classList.remove('visible');
+}
+
+document.getElementById('nav-connect').addEventListener('click',         openConnect);
+document.getElementById('cosmos-connect-btn').addEventListener('click',  openConnect);
+document.getElementById('panel-close').addEventListener('click',         closeConnect);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (connectPanel.classList.contains('visible')) { closeConnect(); return; }
+    if (mode === 'COSMOS') enterHero();
+  }
+});
+
+/* ───────────────────────────────────────────────
+   EXPLORE / BACK
+─────────────────────────────────────────────── */
+document.getElementById('explore-btn').addEventListener('click',  enterCosmos);
+document.getElementById('nav-explore').addEventListener('click',  enterCosmos);
+document.getElementById('nav-explore').addEventListener('keydown', e => e.key === 'Enter' && enterCosmos());
+document.getElementById('back-btn').addEventListener('click',     enterHero);
+
+/* ───────────────────────────────────────────────
+   HELPERS
+─────────────────────────────────────────────── */
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+/* ───────────────────────────────────────────────
+   DRAW LOOP
+─────────────────────────────────────────────── */
+const MAX_DIST_HERO   = 140;
+const MAX_DIST_COSMOS = 170;
+
+function tick() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Advance transitionT
+  transT = clamp(transT + (targetT - transT) * 0.06, 0, 1);
+  const t = EASE(transT); // eased [0,1]
+
+  /* ── DECO NODES ── */
+  for (const n of decoNodes) {
+    n.x += n.vx; n.y += n.vy; n.pulse += 0.018;
+    if (n.x < 0)  { n.x = 0;  n.vx *= -1; }
+    if (n.x > W)  { n.x = W;  n.vx *= -1; }
+    if (n.y < 0)  { n.y = 0;  n.vy *= -1; }
+    if (n.y > H)  { n.y = H;  n.vy *= -1; }
+  }
+
+  /* ── APP NODES ── */
+  for (const n of appNodes) {
+    n.pulse += 0.022;
+    if (n.clickAnim > 0) n.clickAnim = Math.max(0, n.clickAnim - 0.065);
+
+    if (t < 0.45) {
+      // Wander
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0)  { n.x = 0;  n.vx *= -1; }
+      if (n.x > W)  { n.x = W;  n.vx *= -1; }
+      if (n.y < 0)  { n.y = 0;  n.vy *= -1; }
+      if (n.y > H)  { n.y = H;  n.vy *= -1; }
+    } else {
+      // Spring toward cosmos position (nodes keep gently drifting too)
+      const s = (t - 0.45) / 0.55; // [0,1] within cosmos phase
+      n.x += (n.cosmosX - n.x) * (0.06 * s);
+      n.y += (n.cosmosY - n.y) * (0.06 * s);
+      // Subtle organic drift even in cosmos
+      n.x += Math.sin(n.pulse * 0.55 + 1.2) * 0.18;
+      n.y += Math.cos(n.pulse * 0.45 + 0.7) * 0.18;
     }
+  }
 
-    function initNodes() {
-      nodes = Array.from({ length: NODE_COUNT }, () => ({
-        x:  Math.random() * canvas.width,
-        y:  Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r:  Math.random() * 2.2 + 0.8,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        pulse: Math.random() * Math.PI * 2
-      }));
-    }
-
-    function drawFrame(ts) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      for (const n of nodes) {
-        n.x  += n.vx;
-        n.y  += n.vy;
-        n.pulse += 0.02;
-
-        if (n.x < 0 || n.x > canvas.width)  n.vx *= -1;
-        if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
-      }
-
-      // Draw edges
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < MAX_DIST) {
-            const alpha = (1 - dist / MAX_DIST) * 0.18;
+  /* ── EDGES: hero constellation ── */
+  if (t < 0.85) {
+    const all = [...decoNodes, ...appNodes];
+    const edgeA = (1 - t * 1.15);
+    if (edgeA > 0.01) {
+      for (let i = 0; i < all.length; i++) {
+        for (let j = i + 1; j < all.length; j++) {
+          const a = all[i], b = all[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d  = Math.sqrt(dx * dx + dy * dy);
+          if (d < MAX_DIST_HERO) {
+            const alpha = (1 - d / MAX_DIST_HERO) * 0.14 * edgeA;
+            if (alpha < 0.004) continue;
             ctx.beginPath();
             ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-            ctx.lineWidth = 0.6;
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.lineWidth   = 0.55;
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
             ctx.stroke();
           }
         }
       }
-
-      // Draw nodes
-      for (const n of nodes) {
-        const glow = (Math.sin(n.pulse) + 1) * 0.5;
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r + glow * 1.2, 0, Math.PI * 2);
-        ctx.fillStyle = n.color;
-        ctx.globalAlpha = 0.55 + glow * 0.35;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      requestAnimationFrame(drawFrame);
     }
+  }
 
-    const heroSection = document.getElementById('hero');
-    canvas.style.position = 'absolute';
-    canvas.style.inset = '0';
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    heroSection.style.position = 'relative';
-    heroSection.style.overflow = 'hidden';
-    heroSection.insertBefore(canvas, heroSection.firstChild);
-
-    resizeCanvas();
-    initNodes();
-    requestAnimationFrame(drawFrame);
-    window.addEventListener('resize', () => { resizeCanvas(); initNodes(); }, { passive: true });
-
-    /* ── INTERSECTION OBSERVER (reveals) ── */
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-    /* ── GITHUB API ── */
-    const BENTO_PATTERNS = [
-      ['span-8 featured', 'span-4'],
-      ['span-4', 'span-8 featured'],
-      ['span-6', 'span-6'],
-      ['span-5', 'span-7'],
-      ['span-7', 'span-5'],
-      ['span-4', 'span-4', 'span-4'],
-    ];
-
-    function getIcon(lang) {
-      const map = { JavaScript:'JS', TypeScript:'TS', Python:'Py', HTML:'HTML', CSS:'CSS', Vue:'Vue', Svelte:'Sv' };
-      return map[lang] || '→';
-    }
-
-    function renderSkeletons() {
-      const grid = document.getElementById('grid');
-      grid.innerHTML = Array.from({ length: 6 }, (_, i) => {
-        const span = i === 0 ? 'span-8' : i === 1 ? 'span-4' : i < 4 ? 'span-6' : 'span-4';
-        return `<div class="skeleton ${span}"></div>`;
-      }).join('');
-    }
-
-    function renderCards(repos) {
-      const grid = document.getElementById('grid');
-      if (!repos.length) {
-        grid.innerHTML = `<p style="color:var(--muted);grid-column:span 12">No deployed apps found yet.</p>`;
-        return;
-      }
-
-      let html = '';
-      let i = 0;
-      let patternIdx = 0;
-
-      while (i < repos.length) {
-        const pattern = BENTO_PATTERNS[patternIdx % BENTO_PATTERNS.length];
-        patternIdx++;
-        for (const cls of pattern) {
-          if (i >= repos.length) break;
-          const repo = repos[i++];
-          const url  = `https://${USERNAME}.github.io/${repo.name}/`;
-          const lang = repo.language || 'Web';
-          const desc = repo.description || 'No description provided.';
-          const updated = new Date(repo.pushed_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-
-          html += `
-            <a class="app-card ${cls}" href="${url}" target="_blank" rel="noopener noreferrer">
-              <div class="card-top">
-                <span class="card-name">${repo.name}</span>
-                <span class="live-dot" title="Live"></span>
-              </div>
-              <p class="card-desc">${desc}</p>
-              <div class="card-bottom">
-                <span class="card-meta">${lang} · ${updated}</span>
-                <span class="card-arrow">↗</span>
-              </div>
-            </a>
-          `;
+  /* ── EDGES: cosmos emerald ── */
+  if (t > 0.25) {
+    const cosmosA = (t - 0.25) / 0.75;
+    for (let i = 0; i < appNodes.length; i++) {
+      for (let j = i + 1; j < appNodes.length; j++) {
+        const a = appNodes[i], b = appNodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d  = Math.sqrt(dx * dx + dy * dy);
+        if (d < MAX_DIST_COSMOS) {
+          const alpha = (1 - d / MAX_DIST_COSMOS) * 0.22 * cosmosA;
+          if (alpha < 0.004) continue;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(16,185,129,${alpha})`;
+          ctx.lineWidth   = 0.65;
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
         }
       }
+    }
+  }
 
-      grid.innerHTML = html;
-      document.getElementById('app-count').textContent = repos.length;
+  /* ── DRAW DECO NODES ── */
+  const decoAlpha = 1 - t;
+  if (decoAlpha > 0.01) {
+    for (const n of decoNodes) {
+      const glow = (Math.sin(n.pulse) + 1) * 0.5;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r + glow * 0.7, 0, Math.PI * 2);
+      ctx.fillStyle = n.color;
+      ctx.globalAlpha = n.baseAlpha * decoAlpha;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
 
-      // Staggered card reveal
-      const cards = grid.querySelectorAll('.app-card');
-      const cardIO = new IntersectionObserver((entries) => {
-        entries.forEach((e, idx) => {
-          if (e.isIntersecting) {
-            setTimeout(() => e.target.classList.add('visible'), idx * 60);
-            cardIO.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.05 });
-      cards.forEach(c => cardIO.observe(c));
+  /* ── DRAW APP NODES ── */
+  const baseR  = isMobile ? 9 : 7;
+  const cosmosR = isMobile ? 16 : 12;
+
+  for (const n of appNodes) {
+    const glow      = (Math.sin(n.pulse) + 1) * 0.5;
+    const r         = lerp(baseR, cosmosR, t) + glow * 1.8 + n.clickAnim * 10 + (n.hovered ? 4 : 0);
+    const isHovered = n.hovered;
+
+    // Outer halo (cosmos only)
+    if (t > 0.15) {
+      const haloA = (t - 0.15) / 0.85 * (isHovered ? 0.18 : 0.1);
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r + 12 + n.clickAnim * 6, 0, Math.PI * 2);
+      ctx.fillStyle   = isHovered ? 'rgba(52,211,153,0.15)' : `rgba(16,185,129,${haloA})`;
+      ctx.globalAlpha = 1;
+      ctx.fill();
     }
 
-    async function fetchApps() {
-      renderSkeletons();
-      try {
-        let repos = [], page = 1;
-        while (true) {
-          const res = await fetch(
-            `https://api.github.com/users/${USERNAME}/repos?per_page=100&page=${page}&sort=pushed`,
-            { headers: { Accept: 'application/vnd.github+json' } }
-          );
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const batch = await res.json();
-          repos = repos.concat(batch);
-          if (batch.length < 100) break;
-          page++;
-        }
+    // Main dot
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+    ctx.fillStyle   = isHovered ? '#34d399' : '#10b981';
+    ctx.globalAlpha = 0.88 + glow * 0.12;
+    ctx.fill();
 
-        // Avatar
-        try {
-          const uRes = await fetch(`https://api.github.com/users/${USERNAME}`);
-          if (uRes.ok) {
-            const u = await uRes.json();
-            // Could add avatar somewhere if desired
-          }
-        } catch {}
+    // Bright core
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r * 0.38, 0, Math.PI * 2);
+    ctx.fillStyle   = 'rgba(255,255,255,0.9)';
+    ctx.globalAlpha = 0.55 + glow * 0.35;
+    ctx.fill();
 
-        const apps = repos
-          .filter(r => r.has_pages && r.name.toLowerCase() !== HUB_REPO.toLowerCase())
-          .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at));
+    ctx.globalAlpha = 1;
 
-        renderCards(apps);
-      } catch (err) {
-        document.getElementById('grid').innerHTML =
-          `<p style="color:var(--muted);grid-column:span 12">Could not reach GitHub API. Try again shortly.</p>`;
-        console.error(err);
+    /* ── LABELS ── */
+    if (t > 0.45) {
+      const labelA = (t - 0.45) / 0.55;
+      ctx.globalAlpha = labelA;
+
+      if (!isMobile) {
+        // Desktop: label to the right
+        ctx.font      = `${isHovered ? 600 : 400} 12px 'Space Grotesk', sans-serif`;
+        ctx.fillStyle = isHovered ? '#ffffff' : 'rgba(255,255,255,0.65)';
+        ctx.textAlign = 'left';
+        ctx.fillText(n.app.name, n.x + r + 9, n.y + 4);
+      } else {
+        // Mobile: label below
+        ctx.font      = '400 10px Space Grotesk, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.app.name, n.x, n.y + r + 14);
       }
+
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+/* ───────────────────────────────────────────────
+   GITHUB API
+─────────────────────────────────────────────── */
+async function fetchApps() {
+  try {
+    let repos = [], page = 1;
+    while (true) {
+      const res = await fetch(
+        `https://api.github.com/users/${GH_USER}/repos?per_page=100&page=${page}&sort=pushed`,
+        { headers: { Accept: 'application/vnd.github+json' } }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const batch = await res.json();
+      repos = repos.concat(batch);
+      if (batch.length < 100) break;
+      page++;
     }
 
-    fetchApps();
-  </script>
+    const apps = repos
+      .filter(r => r.has_pages && r.name.toLowerCase() !== HUB_REPO.toLowerCase())
+      .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at))
+      .map(r => ({
+        name: r.name,
+        url:  `https://${GH_USER}.github.io/${r.name}/`,
+        desc: r.description || '',
+        lang: r.language  || 'Web',
+      }));
+
+    initAppNodes(apps);
+  } catch (err) {
+    console.error(err);
+    const hint = document.getElementById('load-hint');
+    if (hint) hint.textContent = 'could not reach github api';
+  }
+}
+
+/* ───────────────────────────────────────────────
+   BOOT
+─────────────────────────────────────────────── */
+resize();
+initDecoNodes();
+fetchApps();
+requestAnimationFrame(tick);
+</script>
 </body>
 </html>
