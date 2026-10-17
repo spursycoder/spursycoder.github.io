@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>stephno</title>
-  <meta name="description" content="Engineer. Builder. Deployer. Apps by stephno." />
+  <meta name="description" content="likes to build cool software! Apps by stephno." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -209,37 +209,60 @@
 
     .cosmos-connect:hover { color: var(--ink); }
 
-    /* ── TOOLTIP ── */
-    #tooltip {
+    /* ── NODE INFO CARD ── */
+    #node-info {
       position: fixed;
+      left: 50%;
+      bottom: 5rem;
+      transform: translateX(-50%) translateY(14px);
       z-index: 20;
       background: #0d0d0d;
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 0.55rem 0.9rem;
+      border-radius: 12px;
+      padding: 1.1rem 1.5rem 1rem;
       pointer-events: none;
       opacity: 0;
-      transform: translateY(6px) scale(0.97);
-      transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
+      min-width: 240px;
+      max-width: min(360px, 90vw);
+      transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
     }
 
-    #tooltip.visible {
+    #node-info.visible {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateX(-50%) translateY(0);
     }
 
-    .tooltip-name {
+    .info-name {
       display: block;
-      font-size: 0.825rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--ink);
+      letter-spacing: -0.02em;
     }
 
-    .tooltip-action {
-      display: block;
+    .info-lang {
+      display: inline-block;
       font-size: 0.68rem;
       color: var(--accent-e);
-      margin-top: 0.15rem;
+      margin-top: 0.3rem;
+      letter-spacing: 0.04em;
+    }
+
+    .info-desc {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .info-action {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--accent-e);
+      margin-top: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
     }
 
     /* ── CONNECT PANEL ── */
@@ -373,7 +396,6 @@
 <!-- HERO UI -->
 <div id="hero-ui">
   <nav>
-    <a class="nav-wordmark" href="/">stephno</a>
     <ul class="nav-links">
       <li><a id="nav-explore" role="button" tabindex="0">Apps</a></li>
       <li><a id="nav-connect" role="button" tabindex="0">Connect</a></li>
@@ -381,9 +403,9 @@
   </nav>
   <div class="hero-content">
     <h1 class="hero-name">stephno</h1>
-    <p class="hero-sub">Engineer. Builder. Deployer.</p>
+    <p class="hero-sub">likes to build cool software!</p>
     <div class="hero-cta">
-      <button class="btn btn-primary" id="explore-btn">Explore the Universe</button>
+      <button class="btn btn-primary" id="explore-btn">Explore the App Universe</button>
       <span class="hero-stat">
         <strong id="app-count">—</strong> apps in the cosmos
       </span>
@@ -394,14 +416,16 @@
 <!-- COSMOS UI -->
 <div id="cosmos-ui" aria-hidden="true">
   <button class="cosmos-back" id="back-btn">← Back</button>
-  <span class="cosmos-hint">tap a node to open</span>
+  <span class="cosmos-hint">click a node to explore · click again to open</span>
   <a class="cosmos-connect" id="cosmos-connect-btn" role="button" tabindex="0">Connect ↓</a>
 </div>
 
-<!-- TOOLTIP -->
-<div id="tooltip" role="tooltip">
-  <span class="tooltip-name" id="tooltip-name"></span>
-  <span class="tooltip-action">click to open ↗</span>
+<!-- NODE INFO CARD -->
+<div id="node-info" role="tooltip">
+  <span class="info-name" id="info-name"></span>
+  <span class="info-lang" id="info-lang"></span>
+  <span class="info-desc" id="info-desc"></span>
+  <span class="info-action" id="info-action">click again to open ↗</span>
 </div>
 
 <!-- CONNECT PANEL -->
@@ -474,8 +498,7 @@ function enterHero() {
   cu.classList.remove('visible');
   cu.setAttribute('aria-hidden', 'true');
   canvas.style.cursor = 'default';
-  hideTooltip();
-  appNodes.forEach(n => { n.hovered = false; });
+  deselectAll();
 }
 
 /* ───────────────────────────────────────────────
@@ -523,7 +546,8 @@ function initAppNodes(apps) {
     cosmosX: 0,
     cosmosY: 0,
     hovered: false,
-    clickAnim: 0, // 1→0
+    selected: false,  // first click: show info
+    clickAnim: 0,
   }));
   recomputeCosmosPositions();
   document.getElementById('app-count').textContent = apps.length;
@@ -552,26 +576,24 @@ function recomputeCosmosPositions() {
 }
 
 /* ───────────────────────────────────────────────
-   TOOLTIP
+   INFO CARD
 ─────────────────────────────────────────────── */
-const tooltipEl   = document.getElementById('tooltip');
-const tooltipName = document.getElementById('tooltip-name');
+const infoCard   = document.getElementById('node-info');
+const infoName   = document.getElementById('info-name');
+const infoLang   = document.getElementById('info-lang');
+const infoDesc   = document.getElementById('info-desc');
+const infoAction = document.getElementById('info-action');
 
-function showTooltip(node, px, py) {
-  tooltipName.textContent = node.app.name;
-  const tw = 190, th = 52;
-  const off = 14;
-  let tx = px + off, ty = py - th / 2;
-  if (tx + tw > W - 8) tx = px - tw - off;
-  if (ty < 8) ty = 8;
-  if (ty + th > H - 8) ty = H - th - 8;
-  tooltipEl.style.left = tx + 'px';
-  tooltipEl.style.top  = ty + 'px';
-  tooltipEl.classList.add('visible');
+function showInfo(node) {
+  infoName.textContent   = node.app.name;
+  infoLang.textContent   = node.app.lang;
+  infoDesc.textContent   = node.app.desc || 'No description.';
+  infoAction.textContent = 'click again to open ↗';
+  infoCard.classList.add('visible');
 }
 
-function hideTooltip() {
-  tooltipEl.classList.remove('visible');
+function hideInfo() {
+  infoCard.classList.remove('visible');
 }
 
 /* ───────────────────────────────────────────────
@@ -587,6 +609,28 @@ function hitNode(px, py) {
 }
 
 /* ───────────────────────────────────────────────
+   SELECTED NODE STATE
+─────────────────────────────────────────────── */
+let selectedNode = null;
+
+function selectNode(node) {
+  // Deselect previous
+  if (selectedNode && selectedNode !== node) {
+    selectedNode.selected = false;
+  }
+  selectedNode = node;
+  node.selected = true;
+  node.clickAnim = 1;
+  showInfo(node);
+}
+
+function deselectAll() {
+  appNodes.forEach(n => { n.selected = false; n.hovered = false; });
+  selectedNode = null;
+  hideInfo();
+}
+
+/* ───────────────────────────────────────────────
    POINTER  (mouse)
 ─────────────────────────────────────────────── */
 let mouseX = -9999, mouseY = -9999;
@@ -595,53 +639,65 @@ canvas.addEventListener('mousemove', e => {
   mouseX = e.clientX; mouseY = e.clientY;
   if (mode !== 'COSMOS') return;
   const hit = hitNode(mouseX, mouseY);
-  appNodes.forEach(n => { n.hovered = n === hit; });
-  if (hit) { showTooltip(hit, mouseX, mouseY); canvas.style.cursor = 'pointer'; }
-  else     { hideTooltip(); canvas.style.cursor = 'crosshair'; }
+  // Hover highlight (only non-selected nodes)
+  appNodes.forEach(n => { n.hovered = (n === hit); });
+  canvas.style.cursor = hit ? 'pointer' : 'crosshair';
 });
 
 canvas.addEventListener('mouseleave', () => {
   mouseX = -9999; mouseY = -9999;
-  hideTooltip();
   appNodes.forEach(n => { n.hovered = false; });
 });
 
 canvas.addEventListener('click', e => {
   if (mode !== 'COSMOS') return;
   const hit = hitNode(e.clientX, e.clientY);
-  if (hit) {
-    hit.clickAnim = 1;
-    setTimeout(() => window.open(hit.app.url, '_blank', 'noopener,noreferrer'), 220);
+  if (!hit) {
+    deselectAll();
+    return;
+  }
+  if (hit === selectedNode) {
+    // Second click → open immediately (synchronous, no setTimeout — avoids popup blocker)
+    const a = document.createElement('a');
+    a.href   = hit.app.url;
+    a.target = '_blank';
+    a.rel    = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    deselectAll();
+  } else {
+    // First click → select & show info
+    selectNode(hit);
   }
 });
 
 /* ───────────────────────────────────────────────
    TOUCH
 ─────────────────────────────────────────────── */
-let lastTappedNode = null;
-
 canvas.addEventListener('touchstart', e => {
   if (mode !== 'COSMOS') return;
-  const t0 = e.changedTouches[0];
+  const t0  = e.changedTouches[0];
   const hit = hitNode(t0.clientX, t0.clientY);
   if (!hit) {
-    hideTooltip();
-    lastTappedNode = null;
-    appNodes.forEach(n => { n.hovered = false; });
+    deselectAll();
+    e.preventDefault();
     return;
   }
-  hit.clickAnim = 1;
-  if (hit === lastTappedNode) {
-    // Second tap: open
-    setTimeout(() => window.open(hit.app.url, '_blank', 'noopener,noreferrer'), 180);
-    lastTappedNode = null;
-    hideTooltip();
-    appNodes.forEach(n => { n.hovered = false; });
+  if (hit === selectedNode) {
+    // Second tap → open
+    const a = document.createElement('a');
+    a.href   = hit.app.url;
+    a.target = '_blank';
+    a.rel    = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    deselectAll();
   } else {
-    // First tap: preview
+    // First tap → select & show info
+    selectNode(hit);
     appNodes.forEach(n => { n.hovered = n === hit; });
-    showTooltip(hit, t0.clientX, t0.clientY);
-    lastTappedNode = hit;
   }
   e.preventDefault();
 }, { passive: false });
@@ -797,23 +853,44 @@ function tick() {
 
   for (const n of appNodes) {
     const glow      = (Math.sin(n.pulse) + 1) * 0.5;
-    const r         = lerp(baseR, cosmosR, t) + glow * 1.8 + n.clickAnim * 10 + (n.hovered ? 4 : 0);
-    const isHovered = n.hovered;
+    const isSelected = n.selected;
+    const isHovered  = n.hovered;
+    const isActive   = isSelected || isHovered;
+    const r = lerp(baseR, cosmosR, t)
+            + glow * 1.8
+            + n.clickAnim * 10
+            + (isSelected ? 6 : isHovered ? 3 : 0);
 
-    // Outer halo (cosmos only)
+    // Outer halo
     if (t > 0.15) {
-      const haloA = (t - 0.15) / 0.85 * (isHovered ? 0.18 : 0.1);
+      const haloBase = (t - 0.15) / 0.85;
+      const haloA = haloBase * (isSelected ? 0.28 : isHovered ? 0.18 : 0.09);
       ctx.beginPath();
-      ctx.arc(n.x, n.y, r + 12 + n.clickAnim * 6, 0, Math.PI * 2);
-      ctx.fillStyle   = isHovered ? 'rgba(52,211,153,0.15)' : `rgba(16,185,129,${haloA})`;
+      ctx.arc(n.x, n.y, r + (isSelected ? 18 : 12) + n.clickAnim * 6, 0, Math.PI * 2);
+      ctx.fillStyle   = isSelected
+        ? 'rgba(52,211,153,0.22)'
+        : isHovered
+          ? 'rgba(52,211,153,0.14)'
+          : `rgba(16,185,129,${haloA})`;
       ctx.globalAlpha = 1;
       ctx.fill();
+    }
+
+    // Selection ring
+    if (isSelected && t > 0.5) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(52,211,153,0.7)';
+      ctx.lineWidth   = 1.5;
+      ctx.globalAlpha = 0.8;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
     }
 
     // Main dot
     ctx.beginPath();
     ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-    ctx.fillStyle   = isHovered ? '#34d399' : '#10b981';
+    ctx.fillStyle   = isSelected ? '#34d399' : isHovered ? '#2dd4a0' : '#10b981';
     ctx.globalAlpha = 0.88 + glow * 0.12;
     ctx.fill();
 
@@ -832,15 +909,13 @@ function tick() {
       ctx.globalAlpha = labelA;
 
       if (!isMobile) {
-        // Desktop: label to the right
-        ctx.font      = `${isHovered ? 600 : 400} 12px 'Space Grotesk', sans-serif`;
-        ctx.fillStyle = isHovered ? '#ffffff' : 'rgba(255,255,255,0.65)';
+        ctx.font      = `${isActive ? 700 : 400} 12px 'Space Grotesk', sans-serif`;
+        ctx.fillStyle = isActive ? '#ffffff' : 'rgba(255,255,255,0.6)';
         ctx.textAlign = 'left';
         ctx.fillText(n.app.name, n.x + r + 9, n.y + 4);
       } else {
-        // Mobile: label below
-        ctx.font      = '400 10px Space Grotesk, sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        ctx.font      = `${isActive ? 700 : 400} 10px Space Grotesk, sans-serif`;
+        ctx.fillStyle = isActive ? '#ffffff' : 'rgba(255,255,255,0.6)';
         ctx.textAlign = 'center';
         ctx.fillText(n.app.name, n.x, n.y + r + 14);
       }
