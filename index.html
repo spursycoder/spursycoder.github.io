@@ -59,7 +59,9 @@
       transition: opacity 0.75s var(--ease), transform 0.75s var(--ease);
     }
 
-    #hero-ui > * { pointer-events: auto; }
+    /* Hero children receive clicks, but NOT when cosmos is active */
+    .hero-content { pointer-events: auto; }
+    #hero-ui.cosmos-mode .hero-content { pointer-events: none; }
 
     #hero-ui.cosmos-mode {
       opacity: 0;
@@ -67,33 +69,7 @@
       pointer-events: none;
     }
 
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 2rem 4rem;
-    }
 
-    .nav-wordmark {
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      text-decoration: none;
-    }
-
-    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
-
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 400;
-      cursor: pointer;
-      transition: color 0.2s var(--ease);
-    }
-
-    .nav-links a:hover { color: var(--ink); }
 
     .hero-content {
       flex: 1;
@@ -395,17 +371,12 @@
 
 <!-- HERO UI -->
 <div id="hero-ui">
-  <nav>
-    <ul class="nav-links">
-      <li><a id="nav-explore" role="button" tabindex="0">Apps</a></li>
-      <li><a id="nav-connect" role="button" tabindex="0">Connect</a></li>
-    </ul>
-  </nav>
   <div class="hero-content">
     <h1 class="hero-name">stephno</h1>
     <p class="hero-sub">likes to build cool software!</p>
     <div class="hero-cta">
       <button class="btn btn-primary" id="explore-btn">Explore the App Universe</button>
+      <button class="btn btn-outline" id="connect-hero-btn">Connect with me</button>
       <span class="hero-stat">
         <strong id="app-count">—</strong> apps in the cosmos
       </span>
@@ -716,7 +687,7 @@ function closeConnect() {
   connectPanel.classList.remove('visible');
 }
 
-document.getElementById('nav-connect').addEventListener('click',         openConnect);
+document.getElementById('connect-hero-btn').addEventListener('click',   openConnect);
 document.getElementById('cosmos-connect-btn').addEventListener('click',  openConnect);
 document.getElementById('panel-close').addEventListener('click',         closeConnect);
 
@@ -730,10 +701,8 @@ document.addEventListener('keydown', e => {
 /* ───────────────────────────────────────────────
    EXPLORE / BACK
 ─────────────────────────────────────────────── */
-document.getElementById('explore-btn').addEventListener('click',  enterCosmos);
-document.getElementById('nav-explore').addEventListener('click',  enterCosmos);
-document.getElementById('nav-explore').addEventListener('keydown', e => e.key === 'Enter' && enterCosmos());
-document.getElementById('back-btn').addEventListener('click',     enterHero);
+document.getElementById('explore-btn').addEventListener('click', enterCosmos);
+document.getElementById('back-btn').addEventListener('click',    enterHero);
 
 /* ───────────────────────────────────────────────
    HELPERS
